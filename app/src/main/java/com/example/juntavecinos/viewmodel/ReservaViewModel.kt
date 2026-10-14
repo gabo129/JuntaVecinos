@@ -5,8 +5,13 @@ import com.example.juntavecinos.model.ReservaModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-class ReservaViewModel : ViewModel() {
+import com.example.juntavecinos.model.ReservaRepository
+import androidx.lifecycle.viewModelScope
+import com.example.juntavecinos.model.ReservaEntity
+import kotlinx.coroutines.launch
+class ReservaViewModel(
+    private val repository: ReservaRepository
+) : ViewModel() {
 
     private val _reserva = MutableStateFlow(ReservaModel())
 
@@ -67,24 +72,49 @@ class ReservaViewModel : ViewModel() {
             errores["fecha"] = "Debes seleccionar una fecha"
         }
 
-        if (datos.horaInicio.isBlank()) {
-            errores["horaInicio"] = "Ingresa la hora de inicio"
+        val formatoHora = Regex("^([01][0-9]|2[0-3]):[0-5][0-9]$")
+
+        if (!formatoHora.matches(datos.horaInicio)) {
+            errores["horaInicio"] = "Ingresa una hora válida (HH:mm)"
         }
 
-        if (datos.horaFin.isBlank()) {
-            errores["horaFin"] = "Ingresa la hora de término"
+        if (!formatoHora.matches(datos.horaFin)) {
+            errores["horaFin"] = "Ingresa una hora válida (HH:mm)"
         }
 
-        if (datos.horaInicio.isNotBlank() &&
-            datos.horaFin.isNotBlank() &&
-            datos.horaInicio >= datos.horaFin) {
+        if (formatoHora.matches(datos.horaInicio) &&
+            formatoHora.matches(datos.horaFin) &&
+            datos.horaInicio >= datos.horaFin
+        ) {
+
             errores["horaFin"] = "La hora de término debe ser posterior"
         }
-
         if (!datos.aceptaCondiciones) {
             errores["aceptaCondiciones"] = "Debes aceptar las condiciones"
         }
-
         return errores
+    }
+
+    fun guardarReserva() {
+        if (validarReserva().isNotEmpty()) return
+
+        val datos = _reserva.value
+        val fecha = datos.fecha ?: return
+        val cantidad = datos.cantidadPersonas.toIntOrNull() ?: return
+
+        viewModelScope.launch {
+            repository.guardarReserva(
+                ReservaEntity(
+                    nombre = datos.nombre,
+                    motivo = datos.motivo,
+                    cantidadPersonas = cantidad,
+                    fecha = fecha,
+                    horaInicio = datos.horaInicio,
+                    horaFin = datos.horaFin,
+                    aceptaCondiciones = datos.aceptaCondiciones,
+                    requiereEquipamiento = datos.requiereEquipamiento
+                )
+            )
+        }
     }
 }

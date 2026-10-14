@@ -32,23 +32,29 @@ import com.example.juntavecinos.ui.theme.JuntaVecinosTheme
 import com.example.juntavecinos.ui.screens.PantallaReservas
 import com.example.juntavecinos.ui.screens.PantallaFinanzas
 import com.example.juntavecinos.ui.screens.PantallaNuevaReserva
+import com.example.juntavecinos.model.AppDatabase
+import com.example.juntavecinos.model.ReservaRepository
+
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val repository = ReservaRepository(
+            AppDatabase.getInstance(applicationContext).reservaDao()
+        )
         setContent {
             JuntaVecinosTheme {
-                JuntaVecinosApp()
+                JuntaVecinosApp(repository)
             }
         }
     }
 }
 
-@PreviewScreenSizes
+
 @Composable
-fun JuntaVecinosApp() {
+fun JuntaVecinosApp(repository: ReservaRepository) {
 
     var pantallaActual by remember {
         mutableStateOf("Inicio")
@@ -72,6 +78,7 @@ fun JuntaVecinosApp() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 PantallaReservas(
+                    repository = repository,
                     onVolverClick = {
                         pantallaActual = "Inicio"
                     },
@@ -93,6 +100,7 @@ fun JuntaVecinosApp() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 PantallaNuevaReserva(
+                    repository = repository,
                     onVolverClick = {
                         pantallaActual = "Reservas"
                     }

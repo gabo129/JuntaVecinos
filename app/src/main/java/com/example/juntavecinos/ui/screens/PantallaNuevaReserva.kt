@@ -34,13 +34,21 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-
-
+import com.example.juntavecinos.model.ReservaRepository
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaNuevaReserva(
-    reservaViewModel: ReservaViewModel = viewModel(),
+    repository: ReservaRepository,
+    reservaViewModel: ReservaViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                ReservaViewModel(repository)
+            }
+        }
+    ),
     onVolverClick: () -> Unit = {}
 ) {
 
@@ -158,7 +166,12 @@ fun PantallaNuevaReserva(
 
             Text(text = "Acepto las condiciones de reserva")
         }
-
+        if (errores.containsKey("aceptaCondiciones")) {
+            Text(
+                text = errores["aceptaCondiciones"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -177,6 +190,13 @@ fun PantallaNuevaReserva(
             onClick = { mostrarFecha = true }
         ) {
             Text("Seleccionar fecha")
+        }
+
+        if (errores.containsKey("fecha")) {
+            Text(
+                text = errores["fecha"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
         }
 
         datos.fecha?.let { fecha ->
@@ -218,23 +238,18 @@ fun PantallaNuevaReserva(
             onClick = {
                 intentoGuardar = true
                 errores = reservaViewModel.validarReserva()
+
+                if (errores.isEmpty()) {
+                    reservaViewModel.guardarReserva()
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Guardar reserva")
         }
 
-        if (intentoGuardar) {
-            if (errores.isNotEmpty()) {
-                errores.values.forEach { mensaje ->
-                    Text(
-                        text = mensaje,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            } else {
-                Text(text = "Formulario válido. Pendiente de guardar en Room.")
-            }
+        if (intentoGuardar && errores.isEmpty()) {
+            Text(text = "Formulario válido. Pendiente de guardar en Room.")
         }
         Button(
             onClick = onVolverClick,
