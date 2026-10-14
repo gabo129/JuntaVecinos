@@ -7,10 +7,16 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun PantallaReservas(
-    onVolverClick: () -> Unit
+    onVolverClick: () -> Unit,
+    onNuevaReservaClick: () -> Unit = {}
 ) {
     Column {
+
         Text(text = "Reservas")
+
+        Button(onClick = onNuevaReservaClick) {
+            Text(text = "Nueva Reserva")
+        }
 
         Button(onClick = onVolverClick) {
             Text(text = "Volver")

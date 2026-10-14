@@ -30,6 +30,9 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import com.example.juntavecinos.ui.theme.JuntaVecinosTheme
 import com.example.juntavecinos.ui.screens.PantallaReservas
+import com.example.juntavecinos.ui.screens.PantallaFinanzas
+import com.example.juntavecinos.ui.screens.PantallaNuevaReserva
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +62,9 @@ fun JuntaVecinosApp() {
                 modifier = Modifier.padding(innerPadding),
                 onReservasClick = {
                     pantallaActual = "Reservas"
+                },
+                onFinanzasClick = {
+                    pantallaActual = "Finanzas"
                 }
             )
 
@@ -68,6 +74,27 @@ fun JuntaVecinosApp() {
                 PantallaReservas(
                     onVolverClick = {
                         pantallaActual = "Inicio"
+                    },
+                    onNuevaReservaClick = {
+                        pantallaActual = "NuevaReserva"
+                    }
+                )
+            }
+            "Finanzas" -> Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                PantallaFinanzas(
+                    onVolverClick = {
+                        pantallaActual = "Inicio"
+                    }
+                )
+            }
+            "NuevaReserva" -> Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                PantallaNuevaReserva(
+                    onVolverClick = {
+                        pantallaActual = "Reservas"
                     }
                 )
             }
@@ -80,7 +107,8 @@ fun JuntaVecinosApp() {
 @Composable
 fun PantallaInicio(
     modifier: Modifier = Modifier,
-    onReservasClick: () -> Unit = {}
+    onReservasClick: () -> Unit = {},
+    onFinanzasClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -102,8 +130,10 @@ fun PantallaInicio(
             Text(text = "Reservas")
         }
 
-        Button(onClick = { },
-            modifier = Modifier.fillMaxWidth(0.7f)) {
+        Button(
+            onClick = onFinanzasClick,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        ) {
             Text(text = "Finanzas")
         }
     }
