@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import com.example.juntavecinos.model.ReservaRepository
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun PantallaReservas(
@@ -17,6 +19,7 @@ fun PantallaReservas(
     val reservas by repository.reservas.collectAsState(
         initial = emptyList()
     )
+    val scope = rememberCoroutineScope()
     Column {
 
         Text(text = "Reservas")
@@ -34,6 +37,15 @@ fun PantallaReservas(
                 Text(
                     text = "Horario: ${reserva.horaInicio} a ${reserva.horaFin}"
                 )
+                Button(
+                    onClick = {
+                        scope.launch {
+                            repository.eliminarReserva(reserva)
+                        }
+                    }
+                ) {
+                    Text("Eliminar")
+                }
             }
         }
 
