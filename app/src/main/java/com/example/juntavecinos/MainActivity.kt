@@ -97,6 +97,7 @@ fun JuntaVecinosApp(
                 modifier = Modifier.padding(innerPadding)
             ) {
                 PantallaFinanzas(
+                    repository = movimientoRepository,
                     onVolverClick = {
                         pantallaActual = "Inicio"
                     },

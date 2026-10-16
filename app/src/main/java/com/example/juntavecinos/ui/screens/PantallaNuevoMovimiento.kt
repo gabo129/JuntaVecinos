@@ -159,6 +159,10 @@ fun PantallaNuevoMovimiento(
             onClick = {
                 intentoRegistrar = true
                 errores = movimientoViewModel.validarMovimiento()
+
+                if (errores.isEmpty()) {
+                    movimientoViewModel.guardarMovimiento()
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
