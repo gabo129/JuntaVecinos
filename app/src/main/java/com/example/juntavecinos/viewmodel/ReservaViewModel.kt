@@ -17,6 +17,9 @@ class ReservaViewModel(
 
     val reserva: StateFlow<ReservaModel> = _reserva.asStateFlow()
 
+    private val _mensajeGuardado = MutableStateFlow("")
+    val mensajeGuardado: StateFlow<String> = _mensajeGuardado.asStateFlow()
+
     fun actualizarNombre(nuevoNombre: String) {
         _reserva.value = _reserva.value.copy(nombre = nuevoNombre)
     }
@@ -98,11 +101,25 @@ class ReservaViewModel(
     fun guardarReserva() {
         if (validarReserva().isNotEmpty()) return
 
+        _mensajeGuardado.value = ""
+
         val datos = _reserva.value
         val fecha = datos.fecha ?: return
         val cantidad = datos.cantidadPersonas.toIntOrNull() ?: return
 
         viewModelScope.launch {
+
+            val existeReserva = repository.hayReservaSuperpuesta(
+                fecha,
+                datos.horaInicio,
+                datos.horaFin
+            )
+
+            if (existeReserva) {
+                _mensajeGuardado.value = "El horario seleccionado ya está reservado"
+                return@launch
+            }
+
             repository.guardarReserva(
                 ReservaEntity(
                     nombre = datos.nombre,
@@ -115,6 +132,9 @@ class ReservaViewModel(
                     requiereEquipamiento = datos.requiereEquipamiento
                 )
             )
+
+            _mensajeGuardado.value = "Reserva guardada correctamente"
+            _reserva.value = ReservaModel()
         }
     }
 }

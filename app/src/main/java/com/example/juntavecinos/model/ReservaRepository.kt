@@ -16,4 +16,16 @@ class ReservaRepository(
     suspend fun eliminarReserva(reserva: ReservaEntity) {
         reservaDao.delete(reserva)
     }
+
+    suspend fun hayReservaSuperpuesta(
+        fecha: Long,
+        horaInicio: String,
+        horaFin: String
+    ): Boolean {
+        return reservaDao.contarReservasSuperpuestas(
+            fecha,
+            horaInicio,
+            horaFin
+        ) > 0
+    }
 }

@@ -18,4 +18,16 @@ interface ReservaDao {
 
     @Delete
     suspend fun delete(reserva: ReservaEntity)
+
+    @Query("""
+    SELECT COUNT(*) FROM reservas
+    WHERE fecha = :fecha
+    AND horaInicio < :horaFin
+    AND horaFin > :horaInicio
+""")
+    suspend fun contarReservasSuperpuestas(
+        fecha: Long,
+        horaInicio: String,
+        horaFin: String
+    ): Int
 }

@@ -1,18 +1,24 @@
 package com.example.juntavecinos.model
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
 import android.content.Context
+import androidx.room.Database
 import androidx.room.Room
+import androidx.room.RoomDatabase
 
 @Database(
-    entities = [ReservaEntity::class],
-    version = 1,
+    entities = [
+        ReservaEntity::class,
+        MovimientoEntity::class
+    ],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun reservaDao(): ReservaDao
+
+    abstract fun movimientoDao(): MovimientoDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -23,8 +29,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "juntavecinos_database"
-                ).build().also { INSTANCE = it }
+                )
+                    .addMigrations(MIGRACION_1_2)
+                    .build()
+                    .also { INSTANCE = it }
             }
     }
-
 }

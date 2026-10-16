@@ -34,8 +34,8 @@ import com.example.juntavecinos.ui.screens.PantallaFinanzas
 import com.example.juntavecinos.ui.screens.PantallaNuevaReserva
 import com.example.juntavecinos.model.AppDatabase
 import com.example.juntavecinos.model.ReservaRepository
-
-
+import com.example.juntavecinos.ui.screens.PantallaNuevoMovimiento
+import com.example.juntavecinos.model.MovimientoRepository
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,9 +44,12 @@ class MainActivity : ComponentActivity() {
         val repository = ReservaRepository(
             AppDatabase.getInstance(applicationContext).reservaDao()
         )
+        val movimientoRepository = MovimientoRepository(
+            AppDatabase.getInstance(applicationContext).movimientoDao()
+        )
         setContent {
             JuntaVecinosTheme {
-                JuntaVecinosApp(repository)
+                JuntaVecinosApp(repository, movimientoRepository)
             }
         }
     }
@@ -54,7 +57,10 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun JuntaVecinosApp(repository: ReservaRepository) {
+fun JuntaVecinosApp(
+    repository: ReservaRepository,
+    movimientoRepository: MovimientoRepository
+) {
 
     var pantallaActual by remember {
         mutableStateOf("Inicio")
@@ -93,8 +99,22 @@ fun JuntaVecinosApp(repository: ReservaRepository) {
                 PantallaFinanzas(
                     onVolverClick = {
                         pantallaActual = "Inicio"
+                    },
+                    onNuevoMovimientoClick = {
+                        pantallaActual = "NuevoMovimiento"
                     }
                 )
+            }
+            "NuevoMovimiento" -> Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                PantallaNuevoMovimiento(
+                    repository = movimientoRepository,
+                    onVolverClick = {
+                        pantallaActual = "Finanzas"
+                    }
+                )
+
             }
             "NuevaReserva" -> Column(
                 modifier = Modifier.padding(innerPadding)

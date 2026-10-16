@@ -53,6 +53,7 @@ fun PantallaNuevaReserva(
 ) {
 
     val datos by reservaViewModel.reserva.collectAsState()
+    val mensajeGuardado by reservaViewModel.mensajeGuardado.collectAsState()
     var mostrarFecha by remember { mutableStateOf(false) }
     var errores by remember {
         mutableStateOf<Map<String, String>>(emptyMap())
@@ -248,8 +249,15 @@ fun PantallaNuevaReserva(
             Text(text = "Guardar reserva")
         }
 
-        if (intentoGuardar && errores.isEmpty()) {
-            Text(text = "Formulario válido. Pendiente de guardar en Room.")
+        if (intentoGuardar && errores.isEmpty() && mensajeGuardado.isNotEmpty()) {
+            Text(
+                text = mensajeGuardado,
+                color = if (mensajeGuardado == "El horario seleccionado ya está reservado") {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                }
+            )
         }
         Button(
             onClick = onVolverClick,

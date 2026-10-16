@@ -7,10 +7,15 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun PantallaFinanzas(
-    onVolverClick: () -> Unit
+    onVolverClick: () -> Unit,
+    onNuevoMovimientoClick: () -> Unit = {}
 ) {
     Column {
         Text(text = "Finanzas")
+
+        Button(onClick = onNuevoMovimientoClick) {
+            Text(text = "Registrar movimiento")
+        }
 
         Button(onClick = onVolverClick) {
             Text(text = "Volver")
