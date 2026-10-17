@@ -33,7 +33,16 @@ import androidx.compose.material3.MaterialTheme
 import com.example.juntavecinos.model.MovimientoRepository
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.example.juntavecinos.data.CamaraUriFactory
+import android.net.Uri
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +70,20 @@ fun PantallaNuevoMovimiento(
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = datos.fecha
     )
+    val context = LocalContext.current
+
+    var fotoTomada by remember {
+        mutableStateOf(false)
+    }
+    var fotoUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val camaraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { resultado ->
+        fotoTomada = resultado
+    }
     Column(
         modifier = Modifier.padding(20.dp)
     ) {
@@ -137,21 +160,58 @@ fun PantallaNuevoMovimiento(
             ) {
                 DatePicker(state = datePickerState)
             }
+
         }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = datos.confirmado,
-                    onCheckedChange = {
-                        movimientoViewModel.actualizarConfirmado(it)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = datos.confirmado,
+                onCheckedChange = {
+                    movimientoViewModel.actualizarConfirmado(it)
+                }
+            )
+
+            Text(text = "Confirmo los datos del movimiento")
+
+        }
+        Button(
+            onClick = {
+                val uri = CamaraUriFactory.crearUri(context)
+                fotoUri = uri
+                fotoTomada = false
+                camaraLauncher.launch(uri)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Tomar foto del comprobante")
+        }
+
+        if (fotoTomada) {
+            Text("Fotografía capturada correctamente")
+
+            fotoUri?.let { uri ->
+
+                val imagen = remember(uri) {
+                    context.contentResolver.openInputStream(uri)?.use {
+                        BitmapFactory.decodeStream(it)?.asImageBitmap()
                     }
-                )
+                }
 
-                Text(text = "Confirmo los datos del movimiento")
-
+                if (imagen != null) {
+                    Image(
+                        bitmap = imagen,
+                        contentDescription = "Foto del comprobante",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
         }
+
         Button(onClick = onVolverClick) {
             Text(text = "Volver")
         }

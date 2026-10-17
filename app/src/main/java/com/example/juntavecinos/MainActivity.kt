@@ -36,6 +36,8 @@ import com.example.juntavecinos.model.AppDatabase
 import com.example.juntavecinos.model.ReservaRepository
 import com.example.juntavecinos.ui.screens.PantallaNuevoMovimiento
 import com.example.juntavecinos.model.MovimientoRepository
+import com.example.juntavecinos.ui.screens.PantallaUbicacion
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,9 +79,11 @@ fun JuntaVecinosApp(
                 },
                 onFinanzasClick = {
                     pantallaActual = "Finanzas"
+                },
+                onUbicacionClick = {
+                    pantallaActual = "Ubicacion"
                 }
             )
-
             "Reservas" -> Column(
                 modifier = Modifier.padding(innerPadding)
             ) {
@@ -106,6 +110,17 @@ fun JuntaVecinosApp(
                     }
                 )
             }
+
+            "Ubicacion" -> Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                PantallaUbicacion(
+                    onVolverClick = {
+                        pantallaActual = "Inicio"
+                    }
+                )
+            }
+
             "NuevoMovimiento" -> Column(
                 modifier = Modifier.padding(innerPadding)
             ) {
@@ -137,7 +152,8 @@ fun JuntaVecinosApp(
 fun PantallaInicio(
     modifier: Modifier = Modifier,
     onReservasClick: () -> Unit = {},
-    onFinanzasClick: () -> Unit = {}
+    onFinanzasClick: () -> Unit = {},
+    onUbicacionClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -164,6 +180,12 @@ fun PantallaInicio(
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             Text(text = "Finanzas")
+        }
+        Button(
+            onClick = onUbicacionClick,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        ) {
+            Text("Ubicación")
         }
     }
 }
