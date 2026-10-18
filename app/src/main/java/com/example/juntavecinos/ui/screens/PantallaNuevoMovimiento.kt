@@ -43,7 +43,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.size
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaNuevoMovimiento(
@@ -58,6 +69,7 @@ fun PantallaNuevoMovimiento(
     )
 ) {
     val datos by movimientoViewModel.movimiento.collectAsState()
+    val mensajeGuardado by movimientoViewModel.mensajeGuardado.collectAsState()
     var errores by remember {
         mutableStateOf<Map<String, String>>(emptyMap())
     }
@@ -70,6 +82,9 @@ fun PantallaNuevoMovimiento(
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = datos.fecha
     )
+    LaunchedEffect(datos.fecha) {
+        datePickerState.selectedDateMillis = datos.fecha
+    }
     val context = LocalContext.current
 
     var fotoTomada by remember {
@@ -84,8 +99,17 @@ fun PantallaNuevoMovimiento(
     ) { resultado ->
         fotoTomada = resultado
     }
+    LaunchedEffect(mensajeGuardado) {
+        if (mensajeGuardado == "Movimiento guardado correctamente") {
+            fotoTomada = false
+            fotoUri = null
+        }
+    }
     Column(
-        modifier = Modifier.padding(20.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp)
     ) {
         Text(text = "Registrar movimiento financiero")
 
@@ -95,17 +119,44 @@ fun PantallaNuevoMovimiento(
                 movimientoViewModel.actualizarDescripcion(it)
             },
             label = { Text("Descripción") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = errores.containsKey("descripcion"),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(
+                        id = android.R.drawable.ic_menu_edit
+                    ),
+                    contentDescription = "Descripción del movimiento",
+                    modifier = Modifier.size(16.dp)
+                )
+            },
         )
+
+        if (errores.containsKey("descripcion")) {
+            Text(
+                text = errores["descripcion"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         OutlinedTextField(
             value = datos.monto,
             onValueChange = {
                 movimientoViewModel.actualizarMonto(it)
             },
             label = { Text("Monto ($)") },
-            modifier = Modifier.fillMaxWidth()
-
+            modifier = Modifier.fillMaxWidth(),
+            isError = errores.containsKey("monto"),
+            leadingIcon = {
+                Text(text = "$")
+            },
         )
+
+        if (errores.containsKey("monto")) {
+            Text(
+                text = errores["monto"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -126,6 +177,12 @@ fun PantallaNuevoMovimiento(
             onClick = { mostrarFecha = true }
         ) {
             Text("Seleccionar fecha")
+        }
+        if (errores.containsKey("fecha")) {
+            Text(
+                text = errores["fecha"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
         }
 
         datos.fecha?.let { fecha ->
@@ -175,6 +232,12 @@ fun PantallaNuevoMovimiento(
 
             Text(text = "Confirmo los datos del movimiento")
 
+        }
+        if (errores.containsKey("confirmado")) {
+            Text(
+                text = errores["confirmado"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
         }
         Button(
             onClick = {
@@ -229,17 +292,17 @@ fun PantallaNuevoMovimiento(
             Text(text = "Registrar movimiento")
         }
 
-        if (intentoRegistrar) {
-            if (errores.isNotEmpty()) {
-                errores.values.forEach { mensaje ->
-                    Text(
-                        text = mensaje,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            } else {
-                Text(text = "Formulario válido. Pendiente de guardar en Room.")
-            }
+        AnimatedVisibility(
+            visible = intentoRegistrar &&
+                    errores.isEmpty() &&
+                    mensajeGuardado.isNotEmpty(),
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Text(
+                text = mensajeGuardado,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
         } //cierra column
     } //cierra pantallanuevomovimiento

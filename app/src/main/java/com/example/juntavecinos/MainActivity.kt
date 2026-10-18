@@ -37,7 +37,7 @@ import com.example.juntavecinos.model.ReservaRepository
 import com.example.juntavecinos.ui.screens.PantallaNuevoMovimiento
 import com.example.juntavecinos.model.MovimientoRepository
 import com.example.juntavecinos.ui.screens.PantallaUbicacion
-
+import androidx.compose.material3.Card
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -160,13 +160,25 @@ fun PantallaInicio(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        Text(
-            text = "Junta de Vecinos",
-            style = MaterialTheme.typography.headlineMedium)
+        Card(
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Junta de Vecinos",
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
-        Text(
-            text = "Gestion de arriendos y finanzas",
-            style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = "Gestión de reservas y finanzas",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
 
         Button(
             onClick = onReservasClick,

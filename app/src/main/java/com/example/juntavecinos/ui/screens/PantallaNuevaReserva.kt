@@ -37,7 +37,12 @@ import java.util.TimeZone
 import com.example.juntavecinos.model.ReservaRepository
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaNuevaReserva(
@@ -85,7 +90,14 @@ fun PantallaNuevaReserva(
             onValueChange = { reservaViewModel.actualizarNombre(it) },
             label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth(),
-            isError = errores.containsKey("nombre")
+            isError = errores.containsKey("nombre"),
+            leadingIcon ={
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_edit),
+                    contentDescription = "Nombre del responsable"
+                )
+            },
+
         )
 
         if (errores.containsKey("nombre")) {
@@ -249,7 +261,12 @@ fun PantallaNuevaReserva(
             Text(text = "Guardar reserva")
         }
 
-        if (intentoGuardar && errores.isEmpty() && mensajeGuardado.isNotEmpty()) {
+        AnimatedVisibility(
+            visible = intentoGuardar &&
+                    errores.isEmpty() &&
+                    mensajeGuardado.isNotEmpty(),
+            enter = fadeIn() + expandVertically()
+        ) {
             Text(
                 text = mensajeGuardado,
                 color = if (mensajeGuardado == "El horario seleccionado ya está reservado") {

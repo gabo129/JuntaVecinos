@@ -18,6 +18,11 @@ class MovimientoViewModel(
     val movimiento: StateFlow<MovimientoModel> =
         _movimiento.asStateFlow()
 
+    private val _mensajeGuardado = MutableStateFlow("")
+
+    val mensajeGuardado: StateFlow<String> =
+        _mensajeGuardado.asStateFlow()
+
     fun actualizarDescripcion(valor: String) {
         _movimiento.value = _movimiento.value.copy(descripcion = valor)
     }
@@ -69,6 +74,8 @@ class MovimientoViewModel(
         val fecha = datos.fecha ?: return
         val monto = datos.monto.toLongOrNull() ?: return
 
+        _mensajeGuardado.value = ""
+
         viewModelScope.launch {
             repository.guardarMovimiento(
                 MovimientoEntity(
@@ -79,6 +86,9 @@ class MovimientoViewModel(
                     confirmado = datos.confirmado
                 )
             )
+
+            _movimiento.value = MovimientoModel()
+            _mensajeGuardado.value = "Movimiento guardado correctamente"
         }
     }
 }
