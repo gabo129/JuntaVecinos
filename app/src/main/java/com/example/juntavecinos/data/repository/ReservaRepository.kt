@@ -1,6 +1,8 @@
-package com.example.juntavecinos.model
-import kotlinx.coroutines.flow.Flow
+package com.example.juntavecinos.data.repository
 
+import com.example.juntavecinos.data.local.ReservaDao
+import com.example.juntavecinos.data.model.ReservaEntity
+import kotlinx.coroutines.flow.Flow
 
 class ReservaRepository(
     private val reservaDao: ReservaDao

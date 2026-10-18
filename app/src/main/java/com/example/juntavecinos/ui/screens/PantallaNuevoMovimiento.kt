@@ -30,7 +30,7 @@ import java.util.Locale
 import java.util.TimeZone
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import com.example.juntavecinos.model.MovimientoRepository
+import com.example.juntavecinos.data.repository.MovimientoRepository
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.activity.compose.rememberLauncherForActivityResult

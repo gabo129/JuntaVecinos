@@ -1,4 +1,4 @@
-package com.example.juntavecinos.model
+package com.example.juntavecinos.data.model
 
 data class ReservaModel(
     val nombre: String = "",

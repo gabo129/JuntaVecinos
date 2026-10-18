@@ -1,4 +1,4 @@
-package com.example.juntavecinos.model
+package com.example.juntavecinos.data.local
 
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection

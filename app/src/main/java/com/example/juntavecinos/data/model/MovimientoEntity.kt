@@ -1,4 +1,4 @@
-package com.example.juntavecinos.model
+package com.example.juntavecinos.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

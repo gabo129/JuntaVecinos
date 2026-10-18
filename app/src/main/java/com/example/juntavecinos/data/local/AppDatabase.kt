@@ -1,9 +1,11 @@
-package com.example.juntavecinos.model
+package com.example.juntavecinos.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.juntavecinos.data.model.MovimientoEntity
+import com.example.juntavecinos.data.model.ReservaEntity
 
 @Database(
     entities = [

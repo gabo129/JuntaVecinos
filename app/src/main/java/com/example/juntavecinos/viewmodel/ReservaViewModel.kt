@@ -1,13 +1,13 @@
 package com.example.juntavecinos.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.juntavecinos.model.ReservaModel
+import com.example.juntavecinos.data.model.ReservaModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.juntavecinos.model.ReservaRepository
+import com.example.juntavecinos.data.repository.ReservaRepository
 import androidx.lifecycle.viewModelScope
-import com.example.juntavecinos.model.ReservaEntity
+import com.example.juntavecinos.data.model.ReservaEntity
 import kotlinx.coroutines.launch
 class ReservaViewModel(
     private val repository: ReservaRepository

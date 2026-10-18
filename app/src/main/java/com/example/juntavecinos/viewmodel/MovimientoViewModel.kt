@@ -1,13 +1,13 @@
 package com.example.juntavecinos.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.juntavecinos.model.MovimientoModel
+import com.example.juntavecinos.data.model.MovimientoModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.juntavecinos.model.MovimientoRepository
+import com.example.juntavecinos.data.repository.MovimientoRepository
 import androidx.lifecycle.viewModelScope
-import com.example.juntavecinos.model.MovimientoEntity
+import com.example.juntavecinos.data.model.MovimientoEntity
 import kotlinx.coroutines.launch
 class MovimientoViewModel(
     private val repository: MovimientoRepository

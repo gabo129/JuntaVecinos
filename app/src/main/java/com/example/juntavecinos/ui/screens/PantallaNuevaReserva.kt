@@ -34,13 +34,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import com.example.juntavecinos.model.ReservaRepository
+import com.example.juntavecinos.data.repository.ReservaRepository
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.expandVertically
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 @OptIn(ExperimentalMaterial3Api::class)

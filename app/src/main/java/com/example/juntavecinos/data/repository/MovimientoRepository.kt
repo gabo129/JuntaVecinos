@@ -1,5 +1,7 @@
-package com.example.juntavecinos.model
+package com.example.juntavecinos.data.repository
 
+import com.example.juntavecinos.data.local.MovimientoDao
+import com.example.juntavecinos.data.model.MovimientoEntity
 import kotlinx.coroutines.flow.Flow
 
 class MovimientoRepository(
