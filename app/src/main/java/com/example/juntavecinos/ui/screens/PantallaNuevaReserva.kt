@@ -42,6 +42,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.expandVertically
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaNuevaReserva(
@@ -69,8 +74,18 @@ fun PantallaNuevaReserva(
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = datos.fecha
-    )
 
+    )
+    val horasDisponibles = (0 until 48).map { indice ->
+        "%02d:%02d".format(indice / 2, (indice % 2) * 30)
+    }
+
+    var menuInicioAbierto by remember {
+        mutableStateOf(false)
+    }
+    var menuFinAbierto by remember {
+        mutableStateOf(false)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -136,13 +151,45 @@ fun PantallaNuevaReserva(
             )
         }
 
-        OutlinedTextField(
-            value = datos.horaInicio,
-            onValueChange = { reservaViewModel.actualizarHoraInicio(it) },
-            label = { Text("Hora de inicio (HH:mm)") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = errores.containsKey("horaInicio")
-        )
+        ExposedDropdownMenuBox(
+            expanded = menuInicioAbierto,
+            onExpandedChange = {
+                menuInicioAbierto = it
+            }
+        ) {
+            OutlinedTextField(
+                value = datos.horaInicio,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Hora de inicio") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                isError = errores.containsKey("horaInicio"),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = menuInicioAbierto
+                    )
+                }
+            )
+
+            ExposedDropdownMenu(
+                expanded = menuInicioAbierto,
+                onDismissRequest = {
+                    menuInicioAbierto = false
+                }
+            ) {
+                horasDisponibles.forEach { hora ->
+                    DropdownMenuItem(
+                        text = { Text(hora) },
+                        onClick = {
+                            reservaViewModel.actualizarHoraInicio(hora)
+                            menuInicioAbierto = false
+                        }
+                    )
+                }
+            }
+        }
 
         if (errores.containsKey("horaInicio")) {
             Text(
@@ -151,13 +198,45 @@ fun PantallaNuevaReserva(
             )
         }
 
-        OutlinedTextField(
-            value = datos.horaFin,
-            onValueChange = { reservaViewModel.actualizarHoraFin(it) },
-            label = { Text("Hora de término (HH:mm)") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = errores.containsKey("horaFin")
-        )
+        ExposedDropdownMenuBox(
+            expanded = menuFinAbierto,
+            onExpandedChange = {
+                menuFinAbierto = it
+            }
+        ) {
+            OutlinedTextField(
+                value = datos.horaFin,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Hora de término") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                isError = errores.containsKey("horaFin"),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = menuFinAbierto
+                    )
+                }
+            )
+
+            ExposedDropdownMenu(
+                expanded = menuFinAbierto,
+                onDismissRequest = {
+                    menuFinAbierto = false
+                }
+            ) {
+                horasDisponibles.forEach { hora ->
+                    DropdownMenuItem(
+                        text = { Text(hora) },
+                        onClick = {
+                            reservaViewModel.actualizarHoraFin(hora)
+                            menuFinAbierto = false
+                        }
+                    )
+                }
+            }
+        }
 
         if (errores.containsKey("horaFin")) {
             Text(

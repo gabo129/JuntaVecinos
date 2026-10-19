@@ -87,10 +87,10 @@ fun PantallaReservas(
                     }
                 }
             }
+        }
 
-            Button(onClick = onVolverClick) {
-                Text(text = "Volver")
-            }
+        Button(onClick = onVolverClick) {
+            Text(text = "Volver")
         }
     }
 }
