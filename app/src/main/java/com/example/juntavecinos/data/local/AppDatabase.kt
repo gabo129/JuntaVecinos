@@ -6,13 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.juntavecinos.data.model.MovimientoEntity
 import com.example.juntavecinos.data.model.ReservaEntity
+import com.example.juntavecinos.data.model.UsuarioEntity
 
 @Database(
     entities = [
         ReservaEntity::class,
-        MovimientoEntity::class
+        MovimientoEntity::class,
+        UsuarioEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -21,6 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun movimientoDao(): MovimientoDao
 
+    abstract fun usuarioDao(): UsuarioDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -32,7 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "juntavecinos_database"
                 )
-                    .addMigrations(MIGRACION_1_2)
+                    .addMigrations(MIGRACION_1_2, MIGRACION_2_3)
                     .build()
                     .also { INSTANCE = it }
             }
