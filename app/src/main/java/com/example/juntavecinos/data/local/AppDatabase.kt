@@ -1,3 +1,4 @@
+
 package com.example.juntavecinos.data.local
 
 import android.content.Context
@@ -14,7 +15,7 @@ import com.example.juntavecinos.data.model.UsuarioEntity
         MovimientoEntity::class,
         UsuarioEntity::class
     ],
-    version = 3,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun movimientoDao(): MovimientoDao
 
     abstract fun usuarioDao(): UsuarioDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -35,7 +37,13 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "juntavecinos_database"
                 )
-                    .addMigrations(MIGRACION_1_2, MIGRACION_2_3)
+                    .addMigrations(
+                        MIGRACION_1_2,
+                        MIGRACION_2_3,
+                        MIGRACION_3_4,
+                        MIGRACION_4_5,
+                        MIGRACION_5_6
+                    )
                     .build()
                     .also { INSTANCE = it }
             }

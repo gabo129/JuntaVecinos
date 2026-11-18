@@ -32,4 +32,5 @@ class UsuarioRepository(private val usuarioDao: UsuarioDao) {
 
         return hash == usuario.claveHash
     }
+
 }

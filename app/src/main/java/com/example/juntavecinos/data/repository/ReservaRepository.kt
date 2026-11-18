@@ -1,3 +1,4 @@
+
 package com.example.juntavecinos.data.repository
 
 import com.example.juntavecinos.data.local.ReservaDao
@@ -21,13 +22,22 @@ class ReservaRepository(
 
     suspend fun hayReservaSuperpuesta(
         fecha: Long,
+        dependencia: String,
         horaInicio: String,
         horaFin: String
     ): Boolean {
         return reservaDao.contarReservasSuperpuestas(
             fecha,
+            dependencia,
             horaInicio,
             horaFin
         ) > 0
+    }
+
+    suspend fun actualizarEstado(
+        id: Int,
+        nuevoEstado: String
+    ) {
+        reservaDao.actualizarEstado(id, nuevoEstado)
     }
 }

@@ -12,13 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = Rojo80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Rojo40,
     secondary = PurpleGrey40,
     tertiary = Pink40
 
@@ -36,7 +36,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun JuntaVecinosTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // false
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {

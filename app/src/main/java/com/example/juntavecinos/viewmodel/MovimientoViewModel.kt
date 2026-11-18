@@ -33,6 +33,11 @@ class MovimientoViewModel(
         }
     }
 
+    fun actualizarCategoria(valor: String) {
+        _movimiento.value = _movimiento.value.copy(categoria = valor)
+    }
+
+
     fun actualizarFecha(valor: Long?) {
         _movimiento.value = _movimiento.value.copy(fecha = valor)
     }
@@ -83,7 +88,8 @@ class MovimientoViewModel(
                     monto = monto,
                     fecha = fecha,
                     esIngreso = datos.esIngreso,
-                    confirmado = datos.confirmado
+                    confirmado = datos.confirmado,
+                    categoria = datos.categoria
                 )
             )
 

@@ -2,6 +2,7 @@ package com.example.juntavecinos.data.model
 
 data class ReservaModel(
     val nombre: String = "",
+    val dependencia: String = "",
     val motivo: String = "",
     val cantidadPersonas: String = "",
     val fecha: Long? = null,

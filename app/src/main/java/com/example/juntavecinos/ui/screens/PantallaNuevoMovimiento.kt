@@ -55,6 +55,9 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaNuevoMovimiento(
@@ -78,6 +81,7 @@ fun PantallaNuevoMovimiento(
         mutableStateOf(false)
     }
     var mostrarFecha by remember { mutableStateOf(false) }
+    var menuCategoriaAbierto by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = datos.fecha
@@ -173,6 +177,35 @@ fun PantallaNuevoMovimiento(
                 }
             )
         }
+
+        Box {
+            Button(
+                onClick = { menuCategoriaAbierto = true }
+            ) {
+                Text("Categoría: ${datos.categoria}")
+            }
+
+            DropdownMenu(
+                expanded = menuCategoriaAbierto,
+                onDismissRequest = { menuCategoriaAbierto = false }
+            ) {
+                listOf(
+                    "Arriendo",
+                    "Agua",
+                    "Electricidad",
+                    "Mantención"
+                ).forEach { categoria ->
+                    DropdownMenuItem(
+                        text = { Text(categoria) },
+                        onClick = {
+                            movimientoViewModel.actualizarCategoria(categoria)
+                            menuCategoriaAbierto = false
+                        }
+                    )
+                }
+            }
+        }
+
         Button(
             onClick = { mostrarFecha = true }
         ) {

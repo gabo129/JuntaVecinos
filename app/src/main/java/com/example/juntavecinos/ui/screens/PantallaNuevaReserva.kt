@@ -80,6 +80,16 @@ fun PantallaNuevaReserva(
         "%02d:%02d".format(indice / 2, (indice % 2) * 30)
     }
 
+    var menuDependenciaAbierto by remember {
+        mutableStateOf(false)
+    }
+
+    val dependencias = listOf(
+        "Salón comunitario",
+        "Sala de reuniones"
+    )
+
+
     var menuInicioAbierto by remember {
         mutableStateOf(false)
     }
@@ -117,6 +127,53 @@ fun PantallaNuevaReserva(
         if (errores.containsKey("nombre")) {
             Text(
                 text = errores["nombre"] ?: "",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = menuDependenciaAbierto,
+            onExpandedChange = {
+                menuDependenciaAbierto = it
+            }
+        ) {
+            OutlinedTextField(
+                value = datos.dependencia,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Dependencia") },
+                isError = errores.containsKey("dependencia"),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = menuDependenciaAbierto
+                    )
+                }
+            )
+
+            ExposedDropdownMenu(
+                expanded = menuDependenciaAbierto,
+                onDismissRequest = {
+                    menuDependenciaAbierto = false
+                }
+            ) {
+                dependencias.forEach { dependencia ->
+                    DropdownMenuItem(
+                        text = { Text(dependencia) },
+                        onClick = {
+                            reservaViewModel.actualizarDependencia(dependencia)
+                            menuDependenciaAbierto = false
+                        }
+                    )
+                }
+            }
+        }
+
+        if (errores.containsKey("dependencia")) {
+            Text(
+                text = errores["dependencia"] ?: "",
                 color = MaterialTheme.colorScheme.error
             )
         }

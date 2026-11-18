@@ -1,20 +1,21 @@
+
 package com.example.juntavecinos.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.juntavecinos.data.model.ReservaEntity
 import com.example.juntavecinos.data.model.ReservaModel
+import com.example.juntavecinos.data.repository.ReservaRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.juntavecinos.data.repository.ReservaRepository
-import androidx.lifecycle.viewModelScope
-import com.example.juntavecinos.data.model.ReservaEntity
 import kotlinx.coroutines.launch
+
 class ReservaViewModel(
     private val repository: ReservaRepository
 ) : ViewModel() {
 
     private val _reserva = MutableStateFlow(ReservaModel())
-
     val reserva: StateFlow<ReservaModel> = _reserva.asStateFlow()
 
     private val _mensajeGuardado = MutableStateFlow("")
@@ -22,6 +23,10 @@ class ReservaViewModel(
 
     fun actualizarNombre(nuevoNombre: String) {
         _reserva.value = _reserva.value.copy(nombre = nuevoNombre)
+    }
+
+    fun actualizarDependencia(valor: String) {
+        _reserva.value = _reserva.value.copy(dependencia = valor)
     }
 
     fun actualizarMotivo(valor: String) {
@@ -55,12 +60,15 @@ class ReservaViewModel(
     }
 
     fun validarReserva(): Map<String, String> {
-
         val datos = _reserva.value
         val errores = mutableMapOf<String, String>()
 
         if (datos.nombre.isBlank()) {
             errores["nombre"] = "Debes ingresar un nombre"
+        }
+
+        if (datos.dependencia.isBlank()) {
+            errores["dependencia"] = "Debes seleccionar una dependencia"
         }
 
         if (datos.motivo.isBlank()) {
@@ -89,12 +97,13 @@ class ReservaViewModel(
             formatoHora.matches(datos.horaFin) &&
             datos.horaInicio >= datos.horaFin
         ) {
-
             errores["horaFin"] = "La hora de término debe ser posterior"
         }
+
         if (!datos.aceptaCondiciones) {
             errores["aceptaCondiciones"] = "Debes aceptar las condiciones"
         }
+
         return errores
     }
 
@@ -108,21 +117,23 @@ class ReservaViewModel(
         val cantidad = datos.cantidadPersonas.toIntOrNull() ?: return
 
         viewModelScope.launch {
-
             val existeReserva = repository.hayReservaSuperpuesta(
                 fecha,
+                datos.dependencia,
                 datos.horaInicio,
                 datos.horaFin
             )
 
             if (existeReserva) {
-                _mensajeGuardado.value = "El horario seleccionado ya está reservado"
+                _mensajeGuardado.value =
+                    "El horario seleccionado ya está reservado"
                 return@launch
             }
 
             repository.guardarReserva(
                 ReservaEntity(
                     nombre = datos.nombre,
+                    dependencia = datos.dependencia,
                     motivo = datos.motivo,
                     cantidadPersonas = cantidad,
                     fecha = fecha,
@@ -135,6 +146,15 @@ class ReservaViewModel(
 
             _mensajeGuardado.value = "Reserva guardada correctamente"
             _reserva.value = ReservaModel()
+        }
+    }
+
+    fun actualizarEstado(
+        id: Int,
+        nuevoEstado: String
+    ) {
+        viewModelScope.launch {
+            repository.actualizarEstado(id, nuevoEstado)
         }
     }
 }

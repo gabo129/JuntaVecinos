@@ -2,6 +2,7 @@ package com.example.juntavecinos.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 
 @Entity(tableName = "movimientos")
 data class MovimientoEntity(
@@ -11,5 +12,8 @@ data class MovimientoEntity(
     val monto: Long,
     val fecha: Long,
     val esIngreso: Boolean,
-    val confirmado: Boolean
+    val confirmado: Boolean,
+    @ColumnInfo(defaultValue = "'Sin categoría'")
+    val categoria: String = "Sin categoría"
+
 )

@@ -90,10 +90,16 @@ fun JuntaVecinosApp(
     )
 
     val sesionIniciada by usuarioViewModel.sesionIniciada.collectAsState()
-
-    var pantallaActual by remember {
+LaunchedEffect(Unit) {
+    usuarioRepository.registrarUsuario(
+        "admin",
+        "admin"
+    )
+}
+    var pantallaActual by remember{
         mutableStateOf("Login")
     }
+
 
     LaunchedEffect(sesionIniciada) {
         pantallaActual = if (sesionIniciada) "Inicio" else "Login"

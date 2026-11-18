@@ -1,3 +1,4 @@
+
 package com.example.juntavecinos.data.local
 
 import androidx.room.Dao
@@ -21,14 +22,27 @@ interface ReservaDao {
     suspend fun delete(reserva: ReservaEntity)
 
     @Query("""
-    SELECT COUNT(*) FROM reservas
-    WHERE fecha = :fecha
-    AND horaInicio < :horaFin
-    AND horaFin > :horaInicio
-""")
+        SELECT COUNT(*) FROM reservas
+        WHERE fecha = :fecha
+        AND dependencia = :dependencia
+        AND horaInicio < :horaFin
+        AND horaFin > :horaInicio
+        AND estado IN (
+            'Pendiente',
+            'Aprobada',
+            'Llegada confirmada'
+        )
+    """)
     suspend fun contarReservasSuperpuestas(
         fecha: Long,
+        dependencia: String,
         horaInicio: String,
         horaFin: String
     ): Int
+
+    @Query("UPDATE reservas SET estado = :nuevoEstado WHERE id = :id")
+    suspend fun actualizarEstado(
+        id: Int,
+        nuevoEstado: String
+    )
 }

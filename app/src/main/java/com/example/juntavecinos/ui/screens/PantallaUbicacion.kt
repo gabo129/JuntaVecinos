@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.core.os.CancellationSignal
-
+import com.example.juntavecinos.utils.verificarLlegada
 @SuppressLint("MissingPermission")
 @Composable
 fun PantallaUbicacion(
@@ -32,6 +32,9 @@ fun PantallaUbicacion(
 
     var mensaje by remember {
         mutableStateOf("Presiona el botón para consultar tu ubicación")
+    }
+    var mensajeLlegada by remember {
+        mutableStateOf("")
     }
 
     val obtenerUbicacion: () -> Unit = {
@@ -140,6 +143,26 @@ fun PantallaUbicacion(
         }
 
         Text(text = mensaje)
+
+
+        Button(
+            onClick = {
+                mensajeLlegada = "Verificando llegada..."
+
+                verificarLlegada(
+                    context = context,
+                    latitudEspacio = -33.4372,
+                    longitudEspacio = -70.6506
+                ) { permitida, mensaje ->
+                    mensajeLlegada = mensaje
+                }
+            }
+        ) {
+            Text("Probar confirmación de llegada")
+        }
+
+        Text(text = mensajeLlegada)
+
 
         Button(
             onClick = onVolverClick
