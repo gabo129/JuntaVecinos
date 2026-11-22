@@ -41,13 +41,28 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.juntavecinos.viewmodel.UsuarioViewModel
 import com.example.juntavecinos.ui.screens.PantallaLogin
 import com.example.juntavecinos.ui.screens.PantallaRegistro
-
+import com.example.juntavecinos.ui.screens.PantallaClima
+import android.util.Log
+import com.example.juntavecinos.data.remote.FinanzasRetrofitClient
+import android.Manifest
+import android.os.Build
+import android.content.pm.PackageManager
 
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= 37 &&
+            checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_LOCAL_NETWORK),
+                100
+            )
+        }
+
         enableEdgeToEdge()
 
         val repository = ReservaRepository(
@@ -80,6 +95,18 @@ fun JuntaVecinosApp(
     movimientoRepository: MovimientoRepository,
     usuarioRepository: UsuarioRepository
 ) {
+
+    LaunchedEffect(Unit) {
+        try {
+            val movimientos = FinanzasRetrofitClient.finanzasApi.obtenerMovimientos()
+
+            Log.d("FINANZAS_API", "Movimientos recibidos: ${movimientos.size}")
+
+        } catch (e: Exception) {
+            Log.e("FINANZAS_API", "Error al consultar movimientos", e)
+        }
+    }
+
 
     val usuarioViewModel: UsuarioViewModel = viewModel(
         factory = viewModelFactory {
@@ -133,6 +160,9 @@ LaunchedEffect(Unit) {
                 onUbicacionClick = {
                     pantallaActual = "Ubicacion"
                 },
+                onClimaClick = {
+                    pantallaActual = "Clima"
+                },
                 onCerrarSesionClick = {
                     usuarioViewModel.cerrarSesion()
                 }
@@ -176,6 +206,16 @@ LaunchedEffect(Unit) {
                 )
             }
 
+            "Clima" -> Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                PantallaClima(
+                    onVolverClick = {
+                        pantallaActual = "Inicio"
+                    }
+                )
+            }
+
             "NuevoMovimiento" -> Column(
                 modifier = Modifier.padding(innerPadding)
             ) {
@@ -207,7 +247,8 @@ fun PantallaInicio(
     onReservasClick: () -> Unit = {},
     onFinanzasClick: () -> Unit = {},
     onUbicacionClick: () -> Unit = {},
-    onCerrarSesionClick: () -> Unit = {}
+    onCerrarSesionClick: () -> Unit = {} ,
+    onClimaClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -259,6 +300,14 @@ fun PantallaInicio(
         ) {
             Text("Ubicación")
         }
+
+        Button(
+            onClick = onClimaClick,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        ) {
+            Text("Clima")
+        }
+
         Button(
             onClick = onCerrarSesionClick,
             modifier = Modifier.fillMaxWidth(0.7f)
