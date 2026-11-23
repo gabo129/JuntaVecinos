@@ -14,6 +14,6 @@ data class MovimientoEntity(
     val esIngreso: Boolean,
     val confirmado: Boolean,
     @ColumnInfo(defaultValue = "'Sin categoría'")
-    val categoria: String = "Sin categoría"
-
+    val categoria: String = "Sin categoría",
+    val servidorId: Long? = null
 )

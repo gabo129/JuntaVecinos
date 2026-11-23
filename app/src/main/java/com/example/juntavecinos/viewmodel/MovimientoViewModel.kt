@@ -1,14 +1,21 @@
 package com.example.juntavecinos.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.juntavecinos.data.model.MovimientoModel
+import com.example.juntavecinos.data.model.MovimientoEntity
+import com.example.juntavecinos.data.model.NuevoMovimientoApi
+import com.example.juntavecinos.data.remote.FinanzasRetrofitClient
+import com.example.juntavecinos.data.repository.MovimientoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.juntavecinos.data.repository.MovimientoRepository
-import androidx.lifecycle.viewModelScope
-import com.example.juntavecinos.data.model.MovimientoEntity
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
 class MovimientoViewModel(
     private val repository: MovimientoRepository
 ) : ViewModel() {
@@ -22,6 +29,8 @@ class MovimientoViewModel(
 
     val mensajeGuardado: StateFlow<String> =
         _mensajeGuardado.asStateFlow()
+
+    private var guardando = false
 
     fun actualizarDescripcion(valor: String) {
         _movimiento.value = _movimiento.value.copy(descripcion = valor)
@@ -37,7 +46,6 @@ class MovimientoViewModel(
         _movimiento.value = _movimiento.value.copy(categoria = valor)
     }
 
-
     fun actualizarFecha(valor: Long?) {
         _movimiento.value = _movimiento.value.copy(fecha = valor)
     }
@@ -49,6 +57,7 @@ class MovimientoViewModel(
     fun actualizarConfirmado(valor: Boolean) {
         _movimiento.value = _movimiento.value.copy(confirmado = valor)
     }
+
     fun validarMovimiento(): Map<String, String> {
 
         val datos = _movimiento.value
@@ -72,29 +81,65 @@ class MovimientoViewModel(
 
         return errores
     }
+
     fun guardarMovimiento() {
-        if (validarMovimiento().isNotEmpty()) return
+
+        if (guardando || validarMovimiento().isNotEmpty()) return
 
         val datos = _movimiento.value
         val fecha = datos.fecha ?: return
         val monto = datos.monto.toLongOrNull() ?: return
 
+        val formatoFecha = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+
+        val nuevoMovimiento = NuevoMovimientoApi(
+            tipo = if (datos.esIngreso) "INGRESO" else "GASTO",
+            categoria = datos.categoria,
+            descripcion = datos.descripcion,
+            monto = monto,
+            fecha = formatoFecha.format(Date(fecha))
+        )
+
         _mensajeGuardado.value = ""
+        guardando = true
 
         viewModelScope.launch {
-            repository.guardarMovimiento(
-                MovimientoEntity(
-                    descripcion = datos.descripcion,
-                    monto = monto,
-                    fecha = fecha,
-                    esIngreso = datos.esIngreso,
-                    confirmado = datos.confirmado,
-                    categoria = datos.categoria
-                )
-            )
 
-            _movimiento.value = MovimientoModel()
-            _mensajeGuardado.value = "Movimiento guardado correctamente"
+            try {
+                val movimientoServidor =
+                    FinanzasRetrofitClient.finanzasApi.guardarMovimiento(
+                        nuevoMovimiento
+                    )
+
+                try {
+                    repository.guardarMovimiento(
+                        MovimientoEntity(
+                            descripcion = datos.descripcion,
+                            monto = monto,
+                            fecha = fecha,
+                            esIngreso = datos.esIngreso,
+                            confirmado = datos.confirmado,
+                            categoria = datos.categoria,
+                            servidorId = movimientoServidor.id
+                        )
+                    )
+
+                    _mensajeGuardado.value = "Movimiento guardado correctamente"
+
+                } catch (e: Exception) {
+                    _mensajeGuardado.value =
+                        "Guardado en MySQL, pero no se pudo guardar en Room"
+                }
+
+                _movimiento.value = MovimientoModel()
+
+            } catch (e: Exception) {
+                _mensajeGuardado.value =
+                    "No se pudo confirmar el registro en MySQL"
+            } finally {
+                guardando = false
+            }
         }
     }
 }

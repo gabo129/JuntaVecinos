@@ -1,7 +1,8 @@
-
 package com.example.juntavecinos.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,15 +21,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.juntavecinos.data.remote.FinanzasRetrofitClient
 import com.example.juntavecinos.data.repository.MovimientoRepository
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Arrangement
-import java.util.Calendar
+
 @Composable
 fun PantallaFinanzas(
     repository: MovimientoRepository,
@@ -40,6 +41,14 @@ fun PantallaFinanzas(
     )
 
     val scope = rememberCoroutineScope()
+
+    var mensaje by remember {
+        mutableStateOf("")
+    }
+
+    var eliminando by remember {
+        mutableStateOf(false)
+    }
 
     val totalIngresos = movimientos
         .filter { it.esIngreso }
@@ -80,11 +89,14 @@ fun PantallaFinanzas(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
+
         Text(text = "Finanzas")
 
         Button(onClick = onNuevoMovimientoClick) {
             Text(text = "Registrar movimiento")
         }
+
+        MovimientosServidor()
 
         Card(
             modifier = Modifier
@@ -130,9 +142,12 @@ fun PantallaFinanzas(
                             val calendario = Calendar.getInstance(
                                 TimeZone.getTimeZone("UTC")
                             )
-                            calendario.time = formatoMes.parse(mesSeleccionado) ?: Date()
+                            calendario.time =
+                                formatoMes.parse(mesSeleccionado) ?: Date()
+
                             calendario.add(Calendar.MONTH, -1)
-                            mesSeleccionado = formatoMes.format(calendario.time)
+                            mesSeleccionado =
+                                formatoMes.format(calendario.time)
                         }
                     ) {
                         Text("Anterior")
@@ -143,15 +158,17 @@ fun PantallaFinanzas(
                             val calendario = Calendar.getInstance(
                                 TimeZone.getTimeZone("UTC")
                             )
-                            calendario.time = formatoMes.parse(mesSeleccionado) ?: Date()
+                            calendario.time =
+                                formatoMes.parse(mesSeleccionado) ?: Date()
+
                             calendario.add(Calendar.MONTH, 1)
-                            mesSeleccionado = formatoMes.format(calendario.time)
+                            mesSeleccionado =
+                                formatoMes.format(calendario.time)
                         }
                     ) {
                         Text("Siguiente")
                     }
                 }
-
 
                 Text("Ingresos del mes: $$ingresosMes")
                 Text("Gastos del mes: $$gastosMes")
@@ -163,10 +180,18 @@ fun PantallaFinanzas(
             }
         }
 
+        if (mensaje.isNotEmpty()) {
+            Text(
+                text = mensaje,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
         if (movimientos.isEmpty()) {
-            Text(text = "No hay movimientos registrados")
+            Text("No hay movimientos registrados")
         } else {
             movimientos.forEach { movimiento ->
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,32 +205,52 @@ fun PantallaFinanzas(
                             style = MaterialTheme.typography.titleMedium
                         )
 
-                        Text(
-                            text = "Descripción: ${movimiento.descripcion}"
-                        )
-
-                        Text(
-                            text = "Categoría: ${movimiento.categoria}"
-                        )
+                        Text("Descripción: ${movimiento.descripcion}")
+                        Text("Categoría: ${movimiento.categoria}")
 
                         val formatoFecha = SimpleDateFormat(
                             "dd/MM/yyyy",
                             Locale.getDefault()
                         )
-                        formatoFecha.timeZone = TimeZone.getTimeZone("UTC")
+                        formatoFecha.timeZone =
+                            TimeZone.getTimeZone("UTC")
 
                         Text(
                             text = "Fecha: ${formatoFecha.format(Date(movimiento.fecha))}"
                         )
 
-                        Text(
-                            text = "Monto: $${movimiento.monto}"
-                        )
+                        Text("Monto: $${movimiento.monto}")
 
                         Button(
+                            enabled = !eliminando,
                             onClick = {
                                 scope.launch {
-                                    repository.eliminarMovimiento(movimiento)
+                                    eliminando = true
+                                    mensaje = ""
+
+                                    try {
+                                        val idServidor = movimiento.servidorId
+
+                                        if (idServidor == null) {
+                                            mensaje = "Este movimiento no tiene ID del servidor. No se eliminó."
+                                        } else {
+                                            val respuesta =
+                                                FinanzasRetrofitClient.finanzasApi
+                                                    .eliminarMovimiento(idServidor)
+
+                                            if (respuesta.isSuccessful) {
+                                                repository.eliminarMovimiento(movimiento)
+                                                mensaje = "Movimiento eliminado de MySQL y Room"
+                                            } else {
+                                                mensaje = "No se pudo eliminar en MySQL"
+                                            }
+                                        }
+
+                                    } catch (e: Exception) {
+                                        mensaje = "Error al conectar con el servidor"
+                                    } finally {
+                                        eliminando = false
+                                    }
                                 }
                             }
                         ) {
@@ -217,7 +262,7 @@ fun PantallaFinanzas(
         }
 
         Button(onClick = onVolverClick) {
-            Text(text = "Volver")
+            Text("Volver")
         }
     }
 }

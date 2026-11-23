@@ -1,4 +1,3 @@
-
 package com.example.juntavecinos.data.local
 
 import android.content.Context
@@ -15,7 +14,7 @@ import com.example.juntavecinos.data.model.UsuarioEntity
         MovimientoEntity::class,
         UsuarioEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,7 +41,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRACION_2_3,
                         MIGRACION_3_4,
                         MIGRACION_4_5,
-                        MIGRACION_5_6
+                        MIGRACION_5_6,
+                        MIGRACION_6_7
                     )
                     .build()
                     .also { INSTANCE = it }
