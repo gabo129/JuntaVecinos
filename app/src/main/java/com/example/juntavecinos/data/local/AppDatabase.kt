@@ -14,7 +14,7 @@ import com.example.juntavecinos.data.model.UsuarioEntity
         MovimientoEntity::class,
         UsuarioEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,7 +42,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRACION_3_4,
                         MIGRACION_4_5,
                         MIGRACION_5_6,
-                        MIGRACION_6_7
+                        MIGRACION_6_7,
+                        MIGRACION_7_8
                     )
                     .build()
                     .also { INSTANCE = it }

@@ -29,6 +29,7 @@ fun PantallaRegistro(
     onVolverClick: () -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
 
     val mensaje by usuarioViewModel.mensaje.collectAsState()
@@ -55,7 +56,15 @@ fun PantallaRegistro(
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
-            label = { Text("Nombre de usuario") },
+            label = { Text("Nombre") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = correo,
+            onValueChange = { correo = it },
+            label = { Text("Correo electrónico") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -71,7 +80,7 @@ fun PantallaRegistro(
 
         Button(
             onClick = {
-                usuarioViewModel.registrar(nombre, clave)
+                usuarioViewModel.registrar(nombre, correo, clave)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

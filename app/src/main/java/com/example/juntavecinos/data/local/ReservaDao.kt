@@ -1,4 +1,3 @@
-
 package com.example.juntavecinos.data.local
 
 import androidx.room.Dao
@@ -44,5 +43,11 @@ interface ReservaDao {
     suspend fun actualizarEstado(
         id: Int,
         nuevoEstado: String
+    )
+
+    @Query("UPDATE reservas SET servidorId = :servidorId WHERE id = :id")
+    suspend fun actualizarServidorId(
+        id: Int,
+        servidorId: Long
     )
 }

@@ -1,25 +1,34 @@
-
 package com.example.juntavecinos.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.juntavecinos.data.model.NuevaReservaApi
 import com.example.juntavecinos.data.model.ReservaEntity
 import com.example.juntavecinos.data.model.ReservaModel
+import com.example.juntavecinos.data.remote.ReservasRetrofitClient
 import com.example.juntavecinos.data.repository.ReservaRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class ReservaViewModel(
     private val repository: ReservaRepository
 ) : ViewModel() {
 
     private val _reserva = MutableStateFlow(ReservaModel())
-    val reserva: StateFlow<ReservaModel> = _reserva.asStateFlow()
+    val reserva = _reserva.asStateFlow()
 
     private val _mensajeGuardado = MutableStateFlow("")
-    val mensajeGuardado: StateFlow<String> = _mensajeGuardado.asStateFlow()
+    val mensajeGuardado = _mensajeGuardado.asStateFlow()
+
+    private val _guardando = MutableStateFlow(false)
+    val guardando = _guardando.asStateFlow()
 
     fun actualizarNombre(nuevoNombre: String) {
         _reserva.value = _reserva.value.copy(nombre = nuevoNombre)
@@ -146,6 +155,95 @@ class ReservaViewModel(
 
             _mensajeGuardado.value = "Reserva guardada correctamente"
             _reserva.value = ReservaModel()
+        }
+    }
+
+    fun guardarReservaEnServidor(
+        autorizacion: String,
+        usuarioId: Long
+    ) {
+        if (_guardando.value) return
+        if (validarReserva().isNotEmpty()) return
+
+        val datos = _reserva.value
+        val fecha = datos.fecha ?: return
+        val cantidad = datos.cantidadPersonas.toIntOrNull() ?: return
+
+        val formato = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        formato.timeZone = TimeZone.getTimeZone("UTC")
+
+        val nuevaReserva = NuevaReservaApi(
+            usuarioId = usuarioId,
+            dependencia = datos.dependencia,
+            fecha = formato.format(Date(fecha)),
+            horaInicio = datos.horaInicio,
+            horaFin = datos.horaFin,
+            responsable = datos.nombre,
+            motivo = datos.motivo
+        )
+
+        _guardando.value = true
+        _mensajeGuardado.value = ""
+
+        viewModelScope.launch {
+            try {
+                val respuesta = ReservasRetrofitClient.reservaApi.crearReserva(
+                    autorizacion,
+                    nuevaReserva
+                )
+
+                val idServidor = respuesta.id
+
+                if (idServidor == null) {
+                    _mensajeGuardado.value =
+                        "Reserva creada en MySQL, pero no se recibió su ID"
+                    return@launch
+                }
+
+                try {
+                    repository.guardarReserva(
+                        ReservaEntity(
+                            nombre = datos.nombre,
+                            dependencia = datos.dependencia,
+                            motivo = datos.motivo,
+                            cantidadPersonas = cantidad,
+                            fecha = fecha,
+                            horaInicio = datos.horaInicio,
+                            horaFin = datos.horaFin,
+                            aceptaCondiciones = datos.aceptaCondiciones,
+                            requiereEquipamiento = datos.requiereEquipamiento,
+                            estado = respuesta.estado,
+                            servidorId = idServidor
+                        )
+                    )
+                } catch (e: Exception) {
+                    _mensajeGuardado.value =
+                        "Reserva creada en MySQL, pero no se guardó en Room"
+                    return@launch
+                }
+
+                _mensajeGuardado.value = "Reserva guardada correctamente"
+                _reserva.value = ReservaModel()
+
+            } catch (e: HttpException) {
+                _mensajeGuardado.value = when (e.code()) {
+                    400 -> "Revisa los datos de la reserva"
+                    401 -> "Debes iniciar sesión nuevamente"
+                    403 -> "No tienes permiso para crear esta reserva"
+                    409 -> "El horario seleccionado ya está reservado"
+                    else -> "Error del servidor: ${e.code()}"
+                }
+
+            } catch (e: IOException) {
+                _mensajeGuardado.value =
+                    "No se pudo confirmar la reserva. Revisa MySQL antes de reintentar"
+
+            } catch (e: Exception) {
+                _mensajeGuardado.value = "No se pudo crear la reserva"
+
+            } finally {
+                _guardando.value = false
+            }
         }
     }
 

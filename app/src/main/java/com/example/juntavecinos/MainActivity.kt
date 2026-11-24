@@ -1,6 +1,10 @@
 package com.example.juntavecinos
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,40 +29,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.juntavecinos.data.local.AppDatabase
-import com.example.juntavecinos.data.repository.ReservaRepository
-import com.example.juntavecinos.data.repository.MovimientoRepository
-import com.example.juntavecinos.data.repository.UsuarioRepository
-import com.example.juntavecinos.ui.screens.PantallaReservas
-import com.example.juntavecinos.ui.screens.PantallaFinanzas
-import com.example.juntavecinos.ui.screens.PantallaNuevaReserva
-import com.example.juntavecinos.ui.screens.PantallaNuevoMovimiento
-import com.example.juntavecinos.ui.screens.PantallaUbicacion
-import com.example.juntavecinos.ui.theme.JuntaVecinosTheme
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.juntavecinos.viewmodel.UsuarioViewModel
-import com.example.juntavecinos.ui.screens.PantallaLogin
-import com.example.juntavecinos.ui.screens.PantallaRegistro
-import com.example.juntavecinos.ui.screens.PantallaClima
-import android.util.Log
+import com.example.juntavecinos.data.local.AppDatabase
 import com.example.juntavecinos.data.remote.FinanzasRetrofitClient
-import android.Manifest
-import android.os.Build
-import android.content.pm.PackageManager
-
+import com.example.juntavecinos.data.repository.MovimientoRepository
+import com.example.juntavecinos.data.repository.ReservaRepository
+import com.example.juntavecinos.data.repository.UsuarioRepository
+import com.example.juntavecinos.ui.screens.PantallaClima
+import com.example.juntavecinos.ui.screens.PantallaFinanzas
+import com.example.juntavecinos.ui.screens.PantallaLogin
+import com.example.juntavecinos.ui.screens.PantallaNuevaReserva
+import com.example.juntavecinos.ui.screens.PantallaNuevoMovimiento
+import com.example.juntavecinos.ui.screens.PantallaRegistro
+import com.example.juntavecinos.ui.screens.PantallaReservas
+import com.example.juntavecinos.ui.screens.PantallaUbicacion
+import com.example.juntavecinos.ui.theme.JuntaVecinosTheme
+import com.example.juntavecinos.viewmodel.UsuarioViewModel
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (Build.VERSION.SDK_INT >= 37 &&
-            checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED) {
-
+        if (
+            Build.VERSION.SDK_INT >= 37 &&
+            checkSelfPermission(
+                Manifest.permission.ACCESS_LOCAL_NETWORK
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_LOCAL_NETWORK),
                 100
@@ -65,22 +67,24 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        val repository = ReservaRepository(
-            AppDatabase.getInstance(applicationContext).reservaDao()
+        val database = AppDatabase.getInstance(applicationContext)
+
+        val reservaRepository = ReservaRepository(
+            database.reservaDao()
         )
 
         val movimientoRepository = MovimientoRepository(
-            AppDatabase.getInstance(applicationContext).movimientoDao()
+            database.movimientoDao()
         )
 
         val usuarioRepository = UsuarioRepository(
-            AppDatabase.getInstance(applicationContext).usuarioDao()
+            database.usuarioDao()
         )
 
         setContent {
             JuntaVecinosTheme {
                 JuntaVecinosApp(
-                    repository,
+                    reservaRepository,
                     movimientoRepository,
                     usuarioRepository
                 )
@@ -98,15 +102,21 @@ fun JuntaVecinosApp(
 
     LaunchedEffect(Unit) {
         try {
-            val movimientos = FinanzasRetrofitClient.finanzasApi.obtenerMovimientos()
+            val movimientos = FinanzasRetrofitClient.finanzasApi
+                .obtenerMovimientos()
 
-            Log.d("FINANZAS_API", "Movimientos recibidos: ${movimientos.size}")
-
+            Log.d(
+                "FINANZAS_API",
+                "Movimientos recibidos: ${movimientos.size}"
+            )
         } catch (e: Exception) {
-            Log.e("FINANZAS_API", "Error al consultar movimientos", e)
+            Log.e(
+                "FINANZAS_API",
+                "Error al consultar movimientos",
+                e
+            )
         }
     }
-
 
     val usuarioViewModel: UsuarioViewModel = viewModel(
         factory = viewModelFactory {
@@ -116,25 +126,33 @@ fun JuntaVecinosApp(
         }
     )
 
-    val sesionIniciada by usuarioViewModel.sesionIniciada.collectAsState()
-LaunchedEffect(Unit) {
-    usuarioRepository.registrarUsuario(
-        "admin",
-        "admin"
-    )
-}
-    var pantallaActual by remember{
+    val sesionIniciada by usuarioViewModel.sesionIniciada
+        .collectAsState()
+
+    val autorizacion by usuarioViewModel.autorizacion
+        .collectAsState()
+
+    val usuarioActual by usuarioViewModel.usuarioActual
+        .collectAsState()
+
+    var pantallaActual by remember {
         mutableStateOf("Login")
     }
 
-
     LaunchedEffect(sesionIniciada) {
-        pantallaActual = if (sesionIniciada) "Inicio" else "Login"
+        pantallaActual = if (sesionIniciada) {
+            "Inicio"
+        } else {
+            "Login"
+        }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
 
         when (pantallaActual) {
+
             "Login" -> PantallaLogin(
                 usuarioViewModel = usuarioViewModel,
                 onRegistroClick = {
@@ -178,7 +196,8 @@ LaunchedEffect(Unit) {
                     },
                     onNuevaReservaClick = {
                         pantallaActual = "NuevaReserva"
-                    }
+                    },
+                    autorizacion = autorizacion
                 )
             }
 
@@ -234,7 +253,9 @@ LaunchedEffect(Unit) {
                     repository = repository,
                     onVolverClick = {
                         pantallaActual = "Reservas"
-                    }
+                    },
+                    autorizacion = autorizacion,
+                    usuarioId = usuarioActual?.id
                 )
             }
         }
@@ -247,9 +268,10 @@ fun PantallaInicio(
     onReservasClick: () -> Unit = {},
     onFinanzasClick: () -> Unit = {},
     onUbicacionClick: () -> Unit = {},
-    onCerrarSesionClick: () -> Unit = {} ,
+    onCerrarSesionClick: () -> Unit = {},
     onClimaClick: () -> Unit = {}
 ) {
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -258,6 +280,7 @@ fun PantallaInicio(
             Alignment.CenterVertically
         )
     ) {
+
         Card(
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
@@ -284,14 +307,14 @@ fun PantallaInicio(
             onClick = onReservasClick,
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Text(text = "Reservas")
+            Text("Reservas")
         }
 
         Button(
             onClick = onFinanzasClick,
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Text(text = "Finanzas")
+            Text("Finanzas")
         }
 
         Button(

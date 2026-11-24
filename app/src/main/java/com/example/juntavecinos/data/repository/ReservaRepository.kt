@@ -1,4 +1,3 @@
-
 package com.example.juntavecinos.data.repository
 
 import com.example.juntavecinos.data.local.ReservaDao
@@ -39,5 +38,12 @@ class ReservaRepository(
         nuevoEstado: String
     ) {
         reservaDao.actualizarEstado(id, nuevoEstado)
+    }
+
+    suspend fun actualizarServidorId(
+        id: Int,
+        servidorId: Long
+    ) {
+        reservaDao.actualizarServidorId(id, servidorId)
     }
 }

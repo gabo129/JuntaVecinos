@@ -20,5 +20,6 @@ data class ReservaEntity(
     val aceptaCondiciones: Boolean,
     val requiereEquipamiento: Boolean,
     @ColumnInfo(defaultValue = "'Pendiente'")
-    val estado: String = "Pendiente"
+    val estado: String = "Pendiente",
+    val servidorId: Long? = null
 )

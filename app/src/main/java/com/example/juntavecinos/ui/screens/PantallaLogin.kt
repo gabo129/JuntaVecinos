@@ -27,7 +27,7 @@ fun PantallaLogin(
     usuarioViewModel: UsuarioViewModel,
     onRegistroClick: () -> Unit
 ) {
-    var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
 
     val mensaje by usuarioViewModel.mensaje.collectAsState()
@@ -48,9 +48,9 @@ fun PantallaLogin(
         )
 
         OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre de usuario") },
+            value = correo,
+            onValueChange = { correo = it },
+            label = { Text("Correo electrónico") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -66,7 +66,7 @@ fun PantallaLogin(
 
         Button(
             onClick = {
-                usuarioViewModel.iniciarSesion(nombre, clave)
+                usuarioViewModel.iniciarSesion(correo, clave)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
