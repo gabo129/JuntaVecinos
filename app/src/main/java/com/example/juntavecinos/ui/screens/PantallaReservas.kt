@@ -103,10 +103,7 @@ fun PantallaReservas(
                         it.servidorId == idServidor
                     }
 
-                    if (
-                        local != null &&
-                        local.estado != remota.estado
-                    ) {
+                    if (local != null && local.estado != remota.estado) {
                         repository.actualizarEstado(
                             local.id,
                             remota.estado
@@ -159,11 +156,7 @@ fun PantallaReservas(
                     )
 
                 reservasRemotas = reservasRemotas.map {
-                    if (it.id == idServidor) {
-                        actualizada
-                    } else {
-                        it
-                    }
+                    if (it.id == idServidor) actualizada else it
                 }
 
                 val local = reservasLocales.firstOrNull {
@@ -245,7 +238,7 @@ fun PantallaReservas(
         val token = autorizacion ?: return
         val idServidor = reserva.id ?: return
 
-        if (procesandoId != null) return
+        if (rol != "VECINO" || procesandoId != null) return
 
         mensaje = "Obteniendo ubicación..."
 
@@ -276,11 +269,7 @@ fun PantallaReservas(
                             )
 
                         reservasRemotas = reservasRemotas.map {
-                            if (it.id == idServidor) {
-                                respuesta
-                            } else {
-                                it
-                            }
+                            if (it.id == idServidor) respuesta else it
                         }
 
                         val local = reservasLocales.firstOrNull {
@@ -298,7 +287,8 @@ fun PantallaReservas(
 
                     } catch (e: HttpException) {
                         mensaje = when (e.code()) {
-                            400 -> "El servidor rechazó la llegada. Revisa la fecha, horario y ubicación"
+                            400 -> "El servidor rechazó la llegada. Revisa fecha, horario y ubicación"
+                            401 -> "Debes iniciar sesión nuevamente"
                             403 -> "No tienes permiso para confirmar esta reserva"
                             404 -> "La reserva no existe"
                             else -> "Error del servidor: ${e.code()}"
@@ -383,23 +373,9 @@ fun PantallaReservas(
                     )
 
                     Text("Fecha: ${reserva.fecha}")
-
-                    Text(
-                        "Horario: ${reserva.horaInicio} a ${reserva.horaFin}"
-                    )
-
-                    Text(
-                        "Responsable: ${
-                            reserva.responsable ?: "Sin especificar"
-                        }"
-                    )
-
-                    Text(
-                        "Motivo: ${
-                            reserva.motivo ?: "Sin especificar"
-                        }"
-                    )
-
+                    Text("Horario: ${reserva.horaInicio} a ${reserva.horaFin}")
+                    Text("Responsable: ${reserva.responsable ?: "Sin especificar"}")
+                    Text("Motivo: ${reserva.motivo ?: "Sin especificar"}")
                     Text("Estado: ${reserva.estado}")
 
                     val disponible = procesandoId == null
@@ -442,19 +418,19 @@ fun PantallaReservas(
                         }
                     }
 
-                    if (reserva.estado == "Aprobada") {
+                    if (
+                        rol == "VECINO" &&
+                        reserva.estado == "Aprobada"
+                    ) {
                         Button(
                             enabled = disponible,
                             onClick = {
-                                val permiso = ContextCompat
-                                    .checkSelfPermission(
-                                        context,
-                                        Manifest.permission.ACCESS_FINE_LOCATION
-                                    )
+                                val permiso = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                )
 
-                                if (
-                                    permiso == PackageManager.PERMISSION_GRANTED
-                                ) {
+                                if (permiso == PackageManager.PERMISSION_GRANTED) {
                                     confirmarLlegadaGps(reserva)
                                 } else {
                                     reservaParaGps = reserva
@@ -515,22 +491,15 @@ fun PantallaReservas(
                         formato.timeZone = TimeZone.getTimeZone("UTC")
 
                         Text(
-                            "Fecha: ${
-                                formato.format(Date(reserva.fecha))
-                            }"
+                            "Fecha: ${formato.format(Date(reserva.fecha))}"
                         )
 
-                        Text(
-                            "Horario: ${reserva.horaInicio} a ${reserva.horaFin}"
-                        )
-
+                        Text("Horario: ${reserva.horaInicio} a ${reserva.horaFin}")
                         Text("Estado local: ${reserva.estado}")
 
                         if (reserva.servidorId != null) {
                             Text(
-                                "Sincronizada con MySQL: ID ${
-                                    reserva.servidorId
-                                }"
+                                "Sincronizada con MySQL: ID ${reserva.servidorId}"
                             )
                         } else {
                             Text("Reserva antigua guardada solo en Room")
